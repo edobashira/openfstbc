@@ -1,27 +1,97 @@
-#Bash completion file for OpenFst 1.2
-#Tested on Ubuntu 10.04 using bash 4.5 
-#To use simply source the completion file.
-#source openfstbc
-#These bash completions will add tab completion to the OpenFst flags. This file adds three types of completions based on the flag’s value type.
-#Flags which accept path, numeric values will complete with a trailing = character and then default to the standard path completion.
-#Binary flags will complete without a trailing = character.
-#Flags which can accepted an enumerable string value will complete will a trailing = and then suggest suitable values. For example the –arc_type= completions will suggest log and standard values parameters.
-
-#1    2   3    4     5
-#name cur prev pprev options
-_completeenumerable ()
+_fstequivalent() 
 {
-  if [[ $2 == = || $3 == = ]] ; then
-    if [[ $3 == *$1 ]] ; then
-      COMPREPLY=($(compgen -W "$5" -- ))
-      return 0
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
     fi
-    if [[ $4 == *$1 ]] ; then
-      COMPREPLY=($(compgen -W "$5" -- $2))
-      return 0
+
+    opts="--delta= --random --max_length= --npath= --seed= --select= "
+
+    _completeenumerable select ${cur} ${prev} ${pprev} "fast_log_prob log_prob uniform"
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
     fi
-  fi
 }
+complete -o default -o nospace -F _fstequivalent fstequivalent
+
+_fstdifference() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--compose_filter= --connect "
+
+    _completeenumerable compose_filter ${cur} ${prev} ${pprev} "auto alt_sequence match sequence"
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstdifference fstdifference
+
+_fstmap() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--delta= --map_type= --weight= "
+
+    _completeenumerable map_type ${cur} ${prev} ${pprev} "identity invert plus quantize rmweight superfinal times"
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstmap fstmap
+
+_fstpush() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--delta= --push_weights --push_labels --remove_total_weight --remove_common_affix --to_final "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstpush fstpush
 
 _fstprint() 
 {
@@ -46,7 +116,7 @@ _fstprint()
 }
 complete -o default -o nospace -F _fstprint fstprint
 
-_fstclosure() 
+_fstrandgen() 
 {
     local cur prev opts filters len pprev
     COMPREPLY=()
@@ -58,8 +128,9 @@ _fstclosure()
       pprev="NULL"
     fi
 
-    opts="--closure_plus "
+    opts="--max_length= --npath= --seed= --select= "
 
+    _completeenumerable select ${cur} ${prev} ${pprev} "fast_log_prob log_prob uniform"
     
 
     if [[ ${cur} == -* ]] ; then
@@ -67,31 +138,7 @@ _fstclosure()
     return 0
     fi
 }
-complete -o default -o nospace -F _fstclosure fstclosure
-
-_fstconvert() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--fst_type= "
-
-    _completeenumerable fst_type ${cur} ${prev} ${pprev} "arc_lookahead compact16_acceptor compact16_string compact16_unweighted compact16_unweighted_acceptor compact16_weighted_string compact64_acceptor compact64_string compact64_unweighted compact64_unweighted_acceptor compact64_weighted_string compact8_acceptor compact8_string compact8_unweighted compact8_unweighted_acceptor compact8_weighted_string compact_acceptor compact_string compact_unweighted compact_unweighted_acceptor compact_weighted_string const const16 const64 const8 edit ilabel_lookahead olabel_lookahead vector"
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstconvert fstconvert
+complete -o default -o nospace -F _fstrandgen fstrandgen
 
 _fstshortestdistance() 
 {
@@ -117,6 +164,146 @@ _fstshortestdistance()
 }
 complete -o default -o nospace -F _fstshortestdistance fstshortestdistance
 
+_fstsymbols() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--isymbols= --osymbols= --clear_isymbols --clear_osymbols --relabel_ipairs= --relabel_opairs= --allow_negative_labels "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstsymbols fstsymbols
+
+_fstconvert() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--fst_type= "
+
+    _completeenumerable fst_type ${cur} ${prev} ${pprev} "arc_lookahead compact16_acceptor compact16_string compact16_unweighted compact16_unweighted_acceptor compact16_weighted_string compact64_acceptor compact64_string compact64_unweighted compact64_unweighted_acceptor compact64_weighted_string compact8_acceptor compact8_string compact8_unweighted compact8_unweighted_acceptor compact8_weighted_string compact_acceptor compact_string compact_unweighted compact_unweighted_acceptor compact_weighted_string const const16 const64 const8 edit ilabel_lookahead olabel_lookahead vector"
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstconvert fstconvert
+
+_fstrelabel() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--isymbols= --osymbols= --relabel_isymbols= --relabel_osymbols= --relabel_ipairs= --relabel_opairs= --allow_negative_labels "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstrelabel fstrelabel
+
+_fstrmepsilon() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--connect --delta= --nstate= --reverse --weight= --queue_type= "
+
+    _completeenumerable queue_type ${cur} ${prev} ${pprev} "auto fifo lifo shortest state top"
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstrmepsilon fstrmepsilon
+
+_fstminimize() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--delta= "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstminimize fstminimize
+
+_fstprune() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--delta= --nstate= --weight= "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstprune fstprune
+
 _fstproject() 
 {
     local cur prev opts filters len pprev
@@ -140,6 +327,52 @@ _fstproject()
 }
 complete -o default -o nospace -F _fstproject fstproject
 
+_fstepsnormalize() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--eps_norm_output "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstepsnormalize fstepsnormalize
+
+_fstclosure() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--closure_plus "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstclosure fstclosure
+
 _fstdraw() 
 {
     local cur prev opts filters len pprev
@@ -162,6 +395,53 @@ _fstdraw()
     fi
 }
 complete -o default -o nospace -F _fstdraw fstdraw
+
+_fstequal() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--delta= "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstequal fstequal
+
+_fstcompose() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--compose_filter= --connect "
+
+    _completeenumerable compose_filter ${cur} ${prev} ${pprev} "auto alt_sequence match sequence"
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstcompose fstcompose
 
 _fstshortestpath() 
 {
@@ -212,7 +492,7 @@ _fstcompile()
 }
 complete -o default -o nospace -F _fstcompile fstcompile
 
-_fstreweight() 
+_fstreplace() 
 {
     local cur prev opts filters len pprev
     COMPREPLY=()
@@ -224,7 +504,7 @@ _fstreweight()
       pprev="NULL"
     fi
 
-    opts="--to_final "
+    opts="--epsilon_on_replace "
 
     
 
@@ -233,7 +513,30 @@ _fstreweight()
     return 0
     fi
 }
-complete -o default -o nospace -F _fstreweight fstreweight
+complete -o default -o nospace -F _fstreplace fstreplace
+
+_fstdeterminize() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--delta= --nstate= --weight= --subsequential_label= "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _fstdeterminize fstdeterminize
 
 _fstinfo() 
 {
@@ -260,7 +563,7 @@ _fstinfo()
 }
 complete -o default -o nospace -F _fstinfo fstinfo
 
-_fstequal() 
+_fstintersect() 
 {
     local cur prev opts filters len pprev
     COMPREPLY=()
@@ -272,8 +575,9 @@ _fstequal()
       pprev="NULL"
     fi
 
-    opts="--delta= "
+    opts="--compose_filter= --connect "
 
+    _completeenumerable compose_filter ${cur} ${prev} ${pprev} "auto alt_sequence match sequence"
     
 
     if [[ ${cur} == -* ]] ; then
@@ -281,7 +585,7 @@ _fstequal()
     return 0
     fi
 }
-complete -o default -o nospace -F _fstequal fstequal
+complete -o default -o nospace -F _fstintersect fstintersect
 
 _fstencode() 
 {
@@ -306,7 +610,7 @@ _fstencode()
 }
 complete -o default -o nospace -F _fstencode fstencode
 
-_fstequivalent() 
+_fstreweight() 
 {
     local cur prev opts filters len pprev
     COMPREPLY=()
@@ -318,55 +622,7 @@ _fstequivalent()
       pprev="NULL"
     fi
 
-    opts="--delta= --random --max_length= --npath= --seed= --select= "
-
-    _completeenumerable select ${cur} ${prev} ${pprev} "fast_log_prob log_prob uniform"
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstequivalent fstequivalent
-
-_fstrandgen() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--max_length= --npath= --seed= --select= "
-
-    _completeenumerable select ${cur} ${prev} ${pprev} "fast_log_prob log_prob uniform"
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstrandgen fstrandgen
-
-_fstepsnormalize() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--eps_norm_output "
+    opts="--to_final "
 
     
 
@@ -375,264 +631,7 @@ _fstepsnormalize()
     return 0
     fi
 }
-complete -o default -o nospace -F _fstepsnormalize fstepsnormalize
-
-_fstsymbols() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--isymbols= --osymbols= --clear_isymbols --clear_osymbols --relabel_ipairs= --relabel_opairs= --allow_negative_labels "
-
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstsymbols fstsymbols
-
-_fstmap() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--delta= --map_type= --weight= "
-
-    _completeenumerable map_type ${cur} ${prev} ${pprev} "identity invert plus quantize rmweight superfinal times"
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstmap fstmap
-
-_fstpush() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--delta= --push_weights --push_labels --remove_total_weight --remove_common_affix --to_final "
-
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstpush fstpush
-
-_fstrelabel() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--isymbols= --osymbols= --relabel_isymbols= --relabel_osymbols= --relabel_ipairs= --relabel_opairs= --allow_negative_labels "
-
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstrelabel fstrelabel
-
-_fstprune() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--delta= --nstate= --weight= "
-
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstprune fstprune
-
-_fstdifference() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--compose_filter= --connect "
-
-    _completeenumerable compose_filter ${cur} ${prev} ${pprev} "auto alt_sequence match sequence"
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstdifference fstdifference
-
-_fstdeterminize() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--delta= --nstate= --weight= --subsequential_label= "
-
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstdeterminize fstdeterminize
-
-_fstreplace() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--epsilon_on_replace "
-
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstreplace fstreplace
-
-_fstrmepsilon() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--connect --delta= --nstate= --reverse --weight= --queue_type= "
-
-    _completeenumerable queue_type ${cur} ${prev} ${pprev} "auto fifo lifo shortest state top"
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstrmepsilon fstrmepsilon
-
-_fstminimize() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--delta= "
-
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstminimize fstminimize
-
-_fstcompose() 
-{
-    local cur prev opts filters len pprev
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    if (( $COMP_CWORD > 2)) ; then
-      pprev="${COMP_WORDS[COMP_CWORD-2]}"
-    else
-      pprev="NULL"
-    fi
-
-    opts="--compose_filter= --connect "
-
-    _completeenumerable compose_filter ${cur} ${prev} ${pprev} "auto alt_sequence match sequence"
-    
-
-    if [[ ${cur} == -* ]] ; then
-    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
-    return 0
-    fi
-}
-complete -o default -o nospace -F _fstcompose fstcompose
+complete -o default -o nospace -F _fstreweight fstreweight
 
 _fstarcsort() 
 {
@@ -658,7 +657,7 @@ _fstarcsort()
 }
 complete -o default -o nospace -F _fstarcsort fstarcsort
 
-_fstintersect() 
+_pdtshortestpath() 
 {
     local cur prev opts filters len pprev
     COMPREPLY=()
@@ -670,9 +669,8 @@ _fstintersect()
       pprev="NULL"
     fi
 
-    opts="--compose_filter= --connect "
+    opts="--keep_parentheses --queue_type= --path_gc --pdt_parentheses= "
 
-    _completeenumerable compose_filter ${cur} ${prev} ${pprev} "auto alt_sequence match sequence"
     
 
     if [[ ${cur} == -* ]] ; then
@@ -680,5 +678,235 @@ _fstintersect()
     return 0
     fi
 }
-complete -o default -o nospace -F _fstintersect fstintersect
+complete -o default -o nospace -F _pdtshortestpath pdtshortestpath
+
+_pdtcompose() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--pdt_parentheses= --left_pdt --connect "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _pdtcompose pdtcompose
+
+_pdtexpand() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--pdt_parentheses= --connect --keep_parentheses --weight= "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _pdtexpand pdtexpand
+
+_pdtreverse() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--pdt_parentheses= "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _pdtreverse pdtreverse
+
+_pdtinfo() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--pdt_parentheses= "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _pdtinfo pdtinfo
+
+_pdtreplace() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--pdt_parentheses= "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _pdtreplace pdtreplace
+
+_farextract() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--filename_prefix= --filename_suffix= --generate_filenames= --begin_key= --end_key= "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _farextract farextract
+
+_farinfo() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--begin_key= --end_key= --list_fsts "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _farinfo farinfo
+
+_farprintstrings() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--filename_prefix= --filename_suffix= --generate_filenames= --begin_key= --end_key= --print_key --entry_type= --token_type= --symbols= "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _farprintstrings farprintstrings
+
+_farcompilestrings() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--key_prefix= --key_suffix= --generate_keys= --far_type= --allow_negative_labels --arc_type= --entry_type= --fst_type= --token_type= --symbols= --file_list_input "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _farcompilestrings farcompilestrings
+
+_farcreate() 
+{
+    local cur prev opts filters len pprev
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    if (( $COMP_CWORD > 2)) ; then
+      pprev="${COMP_WORDS[COMP_CWORD-2]}"
+    else
+      pprev="NULL"
+    fi
+
+    opts="--key_prefix= --key_suffix= --generate_keys= --far_type= --file_list_input "
+
+    
+
+    if [[ ${cur} == -* ]] ; then
+    COMPREPLY=($(compgen -W "${opts}" -- ${cur}))
+    return 0
+    fi
+}
+complete -o default -o nospace -F _farcreate farcreate
 

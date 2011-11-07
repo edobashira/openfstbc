@@ -2,25 +2,18 @@
 
 import os, glob, sys
 
-binpath = "/home/pdixon/tools/openfst-1.2.7/src/bin/";
 enumspath = "enumstemplate.txt"
-
-
 enums = {}
-
-for line in open(enumspath):
-  fs = line.strip().split()
-  if len(fs) == 0:
-    continue
-  #prinat fs[1:]
-  if fs[0] not in enums:
-    enums[fs[0]] = []
-  enums[fs[0]].append(fs[1:])
-print >> sys.stderr, enums
-
-
-
-
+def readenums():
+    for line in open(enumspath):
+      fs = line.strip().split()
+      if len(fs) == 0:
+        continue
+      #prinat fs[1:]
+      if fs[0] not in enums:
+        enums[fs[0]] = []
+      enums[fs[0]].append(fs[1:])
+    print >> sys.stderr, enums
 
 
 header = """
@@ -67,35 +60,40 @@ complete -o default -o nospace -F _CMD CMD"""
 def getname(line):
   return line.split("(")[1].split(",")[0]
 
-print header
+#print header
 
-for infile in glob.glob(os.path.join(binpath, '*.cc')):
-    opts = ""
-    base, ext = os.path.splitext(os.path.basename(infile))    
-    print >> sys.stderr, "current file is: " + infile
-    e = ""
-    for line in open(infile):
-      if "DEFINE_bool" in line:
-        name = getname(line)
-        opts = opts + "--" + name + " "
-      elif "DEFINE" in line:
-        name = getname(line)
-        opts = opts + "--" + name + "= "
-    if base in enums:
-      for f in enums[base]:
-        s ="_completeenumerable " + f[0] + " ${cur} ${prev} ${pprev} \""
-        for g in f[1:]:
-          s = s + g +" "
-        e = e + s.strip() + "\"\n    "
-        #print >> sys.stderr, s
-    #print  >> sys.stderr, e
-    #print opts
-    if len(opts) > 0:      
-      ncmd  = cmd.replace("OPTS",opts).replace("CMD",base).replace("$ENUMS",e)
-      print ncmd
-      print ""
-      print >> sys.stderr, "adding", base
-    else:
-      print >> sys.stderr, "ignoring", base
-    
+
+if __name__ == "__main__":
+    readenums()
+    for i in range(1, len(sys.argv)):
+        binpath = sys.argv[i]
+        for infile in glob.glob(os.path.join(binpath, '*.cc')):
+            opts = ""
+            base, ext = os.path.splitext(os.path.basename(infile))    
+            print >> sys.stderr, "current file is: " + infile
+            e = ""
+            for line in open(infile):
+              if "DEFINE_bool" in line:
+                name = getname(line)
+                opts = opts + "--" + name + " "
+              elif "DEFINE" in line:
+                name = getname(line)
+                opts = opts + "--" + name + "= "
+            if base in enums:
+              for f in enums[base]:
+                s ="_completeenumerable " + f[0] + " ${cur} ${prev} ${pprev} \""
+                for g in f[1:]:
+                  s = s + g +" "
+                e = e + s.strip() + "\"\n    "
+                #print >> sys.stderr, s
+            #print  >> sys.stderr, e
+            #print opts
+            if len(opts) > 0:      
+              ncmd  = cmd.replace("OPTS",opts).replace("CMD",base).replace("$ENUMS",e)
+              print ncmd
+              print ""
+              print >> sys.stderr, "adding", base
+            else:
+              print >> sys.stderr, "ignoring", base
+            
 
